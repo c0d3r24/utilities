@@ -1,0 +1,211 @@
+<!DOCTYPE html> 
+<html>
+    <head>
+        <title>Text to speech</title>
+        <style>
+            .table {
+                border: 5px solid rgba(0,0,255, 0.3);
+                color: #fff
+            }
+            .tableContainer{
+                background: #9899ff;
+                width: 500px;
+            }
+            #drag-drop-original-container{
+                margin-top: 100px;
+                margin-left: 20px;
+            }
+            #drag-drop-user-container{
+                margin-top: 10px;
+                margin-left: 20px;
+            }
+            .userGiven{
+                float: left;
+                margin-left: 20px;   
+            }
+            .original{
+                margin-left: 50px;
+            }
+            .rowStyle{
+                cursor: pointer;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                
+            }
+            .rowStyle td {
+                width: 100px;
+                border: 1px solid rgb(236, 212, 212);
+                text-align: center;
+            }
+            .userBoxes{
+                width: 50px;
+                height: 50px;
+                background: rgba(0,112,311,0.3);
+                border: 1px solid #000;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1>Match Tables</h1>
+        <h6>Match the two tables by dragging from the first to second</h6>
+        <div class="tableContainer">
+            <div class="userGiven">
+                <table id='userGiven' class='table'>
+
+                </table>
+            </div>
+            <div class="original">
+                <table id='original' class='table'>
+
+                </table>
+            </div>
+        </div>
+        <div id="drag-drop-container">
+            <div id="drag-drop-user-container">
+                <h1>User Container</h1>
+            </div>
+            <div id="drag-drop-original-container">
+                <h1>Original Container</h1>
+                
+            </div>
+        </div>
+        
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        
+        <script>
+            var originalFormat = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE', 'FFF', 'GGG'];
+            var userGivenFormat = ['BBB', 'DDD', 'AAA', 'EEE', 'CCC', 'GGG', 'FFF'];
+            var userTable$ = $('#userGiven');
+            var original$ = $('#original');
+            var userIndex = 0;
+            var originalIndex = 0;
+
+            function resortOriginal() {
+                let tempVal = userGivenFormat[originalIndex];
+                userGivenFormat[originalIndex]=userGivenFormat[userIndex];
+                userGivenFormat[userIndex]=tempVal;
+
+                $('#userContainer-' + originalIndex).attr('id','userContainer-x');
+                $('#user-' + originalIndex).attr('id','user-x');
+                $('#userContainer-' + userIndex).attr('id','userContainer-'+originalIndex);
+                $('#user-' + userIndex).attr('id','userContainer-'+originalIndex);
+                $('#userContainer-x').attr('id','userContainer-'+userIndex);
+                $('#user-x').attr('id','userContainer-'+userIndex);
+                
+
+                createUserTable(userGivenFormat);
+                createOriginalTable(originalFormat);
+            }
+
+            $(function(){
+                createOriginalTable(originalFormat);
+                createOriginalContainer(originalFormat);
+                createUserTable(userGivenFormat);
+                createUserContainer(userGivenFormat);
+            });
+
+            function createOriginalContainer(arr) {
+                const originalContainer$ = $('#drag-drop-original-container');
+                let div = '<ul>';
+                arr.forEach(function(item, index) {
+                    const id = 'originalContainer-'+ index;
+                    div+= `<li style="width: 100px;
+                                height: 100px;
+                                list-style: none;
+                                float: left;
+                                background: rgba(0,112,311,0.3);
+                                border: 1px solid #000;"  id="${id}">`;
+                    div += item;
+                    div += '</li>';
+                   
+                });
+                div +='</ul>';
+                originalContainer$.append(div);
+                $('li',originalContainer$).each(function(){
+                $(this).droppable({drop: function(){
+                    //$(this).css('background', 'green');
+                    originalIndex = $(this).attr('id').split('-')[1];
+                    resortOriginal();
+                    return false;
+                    }})
+                });
+
+            }
+            function createUserContainer(arr) {
+                let userContainer$ = $('#drag-drop-user-container');
+                let div = '<ul>';
+                arr.forEach(function(item, index){
+                    let id = 'userContainer-'+ index;
+                    div+= `<li style="width: 50px;
+                                height: 50px;
+                                list-style: none;
+                                float: left;
+                                background: rgba(19,112,90,0.7);
+                                border: 1px solid #000;"  id="${id}">`;
+                    div += item;
+                    div += '</li>';
+                    
+                });
+                div +='</ul>';
+                userContainer$.append(div);
+
+                $('li',userContainer$).each(function(){
+                        $(this).draggable();
+                        $(this).mousedown(function(){
+                            console.log($(this).attr('id'));
+                            //$(this).css('background', 'red');
+                            userIndex = $(this).attr('id').split('-')[1];
+                            return false;
+                        });
+                        
+                });
+            }
+
+            function setUserIndexArray(e){
+                $(e).css('background', 'red');
+                userIndex = $(e).attr('id').split('-')[1];
+                return false;
+            }
+            function setOriginalIndexArray(e){
+                $(e).css('background', 'green');
+                originalIndex = $(e).attr('id').split('-')[1];
+                resortOriginal();
+                return false;
+            } 
+            function createUserTable(arr){
+                userTable$.empty();
+                arr.forEach(function(item, index){
+                    let id = 'user-'+ index
+                    var newRow = $('<tr class="rowStyle" id=' +id+ ' onmousedown="setUserIndexArray(this)">');
+                    var cols = "";
+                    cols += '<td>';
+                    cols += item;
+                    cols += '</td>';
+                    newRow.append(cols);
+                    userTable$.append(newRow);
+                });
+            }
+            function createOriginalTable(arr) {
+                original$.empty();
+                arr.forEach(function(item, index){
+                    let id = 'original-'+ index
+                    var newRow = $('<tr id='+id+' class="rowStyle" onmouseup="setOriginalIndexArray(this)">');
+                    var cols = "";
+                    cols += '<td>';
+                    cols += item;
+                    cols += '</td>';
+                    newRow.append(cols);
+                    original$.append(newRow);
+                });
+            }
+        </script>
+    </body>
+</html>
